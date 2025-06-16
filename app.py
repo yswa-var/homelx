@@ -1,8 +1,11 @@
 import streamlit as st
+import sounddevice as sd
 import whisper
 import os
 from gtts import gTTS
 import tempfile
+import pyaudio
+import wave
 from pydub import AudioSegment
 from scipy.io import wavfile
 from openai import OpenAI
@@ -11,7 +14,6 @@ import time
 import shutil
 import atexit
 import warnings
-import base64
 
 warnings.filterwarnings('ignore', message='.*sample_rate will be ignored.*')
 
@@ -147,25 +149,9 @@ model = whisper.load_model("base")
 MEMORY_WINDOW_SIZE = 5  
 
 def record_audio(duration=5):
-    """Record audio using Streamlit's microphone input"""
-    audio_bytes = st.audio_input(
-        label="Click to record",
-        key="audio_recorder"
-    )
-    
-    if audio_bytes is None:
-        return None
-        
-    # Save the audio bytes to a temporary file
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-        f.write(audio_bytes)
-        temp_filename = f.name
-    
-    # Convert to numpy array for processing
-    sample_rate, audio_data = wavfile.read(temp_filename)
-    os.unlink(temp_filename)  # Clean up temp file
-    
-    return audio_data
+    audio = sd.rec(int(duration * 16000), samplerate=16000, channels=1)
+    sd.wait()
+    return audio
 
 def transcribe(audio):
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
@@ -213,6 +199,34 @@ def chat_with_gpt(user_input):
 def mp3_to_wav(mp3_path, wav_path):
     sound = AudioSegment.from_mp3(mp3_path)
     sound.export(wav_path, format="wav")
+
+def play_audio(file_path):
+    """Play audio using PyAudio"""
+    try:
+        wf = wave.open(file_path, 'rb')
+        p = pyaudio.PyAudio()
+        
+        def callback(in_data, frame_count, time_info, status):
+            data = wf.readframes(frame_count)
+            return (data, pyaudio.paContinue)
+        
+        stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                       channels=wf.getnchannels(),
+                       rate=wf.getframerate(),
+                       output=True,
+                       stream_callback=callback)
+        
+        stream.start_stream()
+        
+        while stream.is_active():
+            time.sleep(0.1)
+        
+        stream.stop_stream()
+        stream.close()
+        wf.close()
+        p.terminate()
+    except Exception as e:
+        st.error(f"Error playing audio: {e}")
 
 def speak(text):
     try:
@@ -325,32 +339,18 @@ with col2:
             
     else:
         st.subheader("🎤 Voice Input")
-        st.markdown("Click the microphone button below to start recording")
+        st.markdown("Click the button below to start recording your question")
         
-        audio_file = st.audio_input(
-            label="Click to record",
-            key="audio_recorder"
-        )
-        
-        if audio_file is not None:
-            with st.spinner("🎤 Processing your speech..."):
-                # Save the audio bytes to a temporary file
-                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-                    f.write(audio_file.getvalue())  # Read the file content
-                    temp_filename = f.name
-                
-                try:
-                    # Convert to numpy array for processing
-                    sample_rate, audio_data = wavfile.read(temp_filename)
-                    question = transcribe(audio_data)
-                    if question.strip():
-                        process_user_input(question, "voice")
-                    else:
-                        st.warning("No speech detected. Please try again.")
-                finally:
-                    # Clean up temp file
-                    if os.path.exists(temp_filename):
-                        os.unlink(temp_filename)
+        if st.button("🎤 Record Question (6 seconds)", 
+                     key="record_button",
+                     help="Click and speak your question clearly"):
+            with st.spinner("🎤 Recording... Speak now!"):
+                audio = record_audio(duration=6)
+                question = transcribe(audio)
+                if question.strip():
+                    process_user_input(question, "voice")
+                else:
+                    st.warning("No speech detected. Please try again.")
 
     st.markdown("---")
     st.subheader("Connect")
