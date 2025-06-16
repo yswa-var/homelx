@@ -4,7 +4,6 @@ import whisper
 import os
 from gtts import gTTS
 import tempfile
-import simpleaudio as sa
 from pydub import AudioSegment
 from scipy.io import wavfile
 from openai import OpenAI
@@ -200,9 +199,8 @@ def mp3_to_wav(mp3_path, wav_path):
     sound.export(wav_path, format="wav")
 
 def play_audio(file_path):
-    wave_obj = sa.WaveObject.from_wave_file(file_path)
-    play_obj = wave_obj.play()
-    play_obj.wait_done()
+    # This function is no longer needed as we use st.audio directly
+    pass
 
 def speak(text):
     try:
