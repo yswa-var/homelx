@@ -3,7 +3,6 @@
 #   macOS: brew install ffmpeg
 
 openai>=1.0.0
-sounddevice>=0.4.6
 openai-whisper==20231117
 gTTS>=2.4.0
 pydub>=0.25.1
