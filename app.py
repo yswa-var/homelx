@@ -14,6 +14,7 @@ import time
 import shutil
 import atexit
 import warnings
+from dotenv import load_dotenv
 
 warnings.filterwarnings('ignore', message='.*sample_rate will be ignored.*')
 
@@ -143,7 +144,9 @@ PERSONAL_CONTEXT = {
     ]
 }
 
-client = OpenAI(api_key=st.secrets["openai_api_key"])
+load_dotenv()  # Load environment variables from .env file
+
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 model = whisper.load_model("base")
 
 MEMORY_WINDOW_SIZE = 5  
