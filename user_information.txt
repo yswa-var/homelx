@@ -1,0 +1,90 @@
+# Yashaswa Varshney
+
+**Email**: yswa.var@icloud.com  
+**Phone**: +91 6396300355  
+**LinkedIn**: [linkedin.com/in/yashaswa-varshney](https://linkedin.com/in/yashaswa-varshney)  
+**GitHub**: [github.com/yswa-var](https://github.com/yswa-var)  
+
+---
+
+## Experience
+
+### HyperBots, Bengaluru, IN  
+**Software Development Engineer**  
+*Aug 2024 – Present*  
+- Developed ERP connectors for AI-driven accounts payable workflows, improving data exchange.  
+- Implemented real-time notifications (email, WhatsApp, web), reducing turnaround time.  
+
+### Finzome, Mumbai, IN  
+**Software Developer Intern**  
+*Jun 2024 – Aug 2024*  
+- Built a backtesting framework for stocks; reduced runtime using Cython.  
+- Optimized trading strategies via parameter tuning.  
+- Designed backend and integrated payments for LMS (90%+ success rate).  
+
+### AR Quants, Mumbai, IN  
+**Software Developer Intern**  
+*Feb 2023 – Aug 2023*  
+- Built statistical tools for transaction analysis.  
+- Designed InfluxDB-based timeseriesDB storage.  
+- Created custom Pine Script indicators for market pattern visualization.  
+
+---
+
+## Projects
+
+### [Multi-Database Query Orchestrator](https://github.com/yswa-var/LocoForge)  
+*LangGraph, MCP, SQL, MongoDB*  
+- Unified natural language interface for SQL, NoSQL, and Drive-based queries.  
+- Features layered agent system: Planner, Executor, and Error Handler.  
+- Supports schema-aware, context-sensitive query generation.  
+
+### [Sector Rotation Graph](https://github.com/yswa-var/RRG)  
+*Open-source Bloomberg RRG clone*  
+- Visualized sector performance using Yahoo Finance data.  
+- Streamlit-based GUI with benchmarking against indices.  
+
+### [FilthyFilter](https://github.com/yswa-var/FilthyFilter)  
+*OpenCV, Tesseract OCR, Computer Vision*  
+- Extracts high-quality wallpapers from anime movies using multi-metric visual analysis.  
+- Prioritizes frames based on sharpness, color vibrancy, composition, and character detection.  
+- Filters out frames with text overlays using OCR; supports full customization and automation.  
+
+---
+
+## Technical Skills
+
+- **Tools & Frameworks**: REST API, PyTorch, LangGraph, LangChain, RAG, Vector DBs, MCP  
+- **Platforms**: Pine Script, GitHub, DB Ops, AWS  
+- **Languages**: Python, Golang (learning), SQL, Bash  
+- **Domains**: AI Agents, Financial Systems, Automation  
+- **Soft Skills**: Analytical Thinking, Design Thinking, Planning  
+
+---
+
+## Education
+
+**KIIT University, Bhubaneswar, IN**  
+*School of Computer Science*  
+**B.Tech in Computer Science Engineering**  
+*Sep 2020 – Sep 2024*  
+- **CGPA**: 8.30  
+- **Coursework**: Financial Economics using Data Analytics  
+
+---
+
+## Achievements
+
+- Contributed to Flowise Python connectors (AI agent infra).  
+- Blog: “[Nadaraya-Watson Indicator](https://medium.com/@yashaswa/backtesting-the-viral-nadaraya-watson-envelop-trading-indicator-in-python-b800a70e8167)” [12.5K+ views].  
+- Speaker: UN Workshop on Power BI.  
+- ArtStation: *Utopia Concept Art Winner*, Spring 2020.  
+
+---
+
+## Interests
+
+- Blogging (Finance, AI)  
+- Himalayan trekking (3 peaks)  
+- Swimming  
+- Hiking  

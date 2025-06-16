@@ -1,0 +1,25 @@
+Stage 1: At-home Assessment
+Stage 2: Behavioural Interview
+Stage 3: Interview with the Tech team (divided into two sections)
+Stage 4: Final Interview with the CEO
+
+You is reffreing to me (Yashaswa Varshney) user_information.text
+
+You’re now in Stage 1.
+
+Using ChatGPT’s API, create a voice bot that can respond to the following questions as YOU would respond to them.
+
+Here’s an example of questions, NOT an exhaustive list of questions that we will test your bot with.
+
+What should we know about your life story in a few sentences?
+What’s your #1 superpower?
+What are the top 3 areas you’d like to grow in?
+What misconception do your coworkers have about you?
+How do you push your boundaries and limits?
+
+Submission Guidelines
+Provide a URL of your submission 48 hours of this message. Your submission will be a web app where the chat bot is deployed.
+
+Important: Your submission must be universally user-friendly, even for non-technical users. Please ensure:
+✅ A web app or an interactive demo that allows anyone to easily test your voicebot
+✅ A setup that is simple and does not require coding knowledge or complex installations.

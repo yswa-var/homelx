@@ -1,0 +1,17 @@
+# Python 3.10
+# - ffmpeg (required for pydub)
+#   macOS: brew install ffmpeg
+
+openai>=1.0.0
+sounddevice>=0.4.6
+openai-whisper==20231117
+gTTS>=2.4.0
+simpleaudio>=1.0.4
+pydub>=0.25.1
+scipy>=1.12.0
+streamlit>=1.32.0
+torch==2.1.2
+numpy<2.0.0
+watchdog>=3.0.0
+python-dotenv
+
