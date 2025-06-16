@@ -14,10 +14,8 @@ import shutil
 import atexit
 import warnings
 
-# Suppress specific Streamlit warning
 warnings.filterwarnings('ignore', message='.*sample_rate will be ignored.*')
 
-# Set page config
 st.set_page_config(
     page_title="AI Voice Assistant",
     page_icon="🎙️",
@@ -25,7 +23,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 if 'audio_files' not in st.session_state:
@@ -33,11 +30,10 @@ if 'audio_files' not in st.session_state:
 if 'is_recording' not in st.session_state:
     st.session_state.is_recording = False
 if 'input_method' not in st.session_state:
-    st.session_state.input_method = "text"  # Default to text input
+    st.session_state.input_method = "text"
 if 'conversation_history' not in st.session_state:
-    st.session_state.conversation_history = []  # Store conversation turns for context
+    st.session_state.conversation_history = []  
 
-# Create a directory for audio files
 AUDIO_DIR = "audio_files"
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
@@ -51,10 +47,9 @@ def cleanup_audio_files():
                 print(f"Error cleaning up {file_path}: {e}")
     st.session_state.audio_files.clear()
 
-# Register cleanup on program exit
+
 atexit.register(cleanup_audio_files)
 
-# Constants
 SYSTEM_PROMPT = """# Yashaswa Varshney (YASH)
 **Email**: yswa.var@icloud.com  
 **Phone**: +91 6396300355  
@@ -128,7 +123,6 @@ When responding to questions:
 
 Remember: You are Yashaswa Varshney, and you should respond as if you are speaking directly to the person asking the question."""
 
-# Add personal context for the model
 PERSONAL_CONTEXT = {
     "name": "Yashaswa Varshney you can call me Yash",
     "current_role": "Software Development Engineer at HyperBots",
@@ -151,7 +145,7 @@ PERSONAL_CONTEXT = {
 client = OpenAI(api_key=st.secrets["openai_api_key"])
 model = whisper.load_model("base")
 
-MEMORY_WINDOW_SIZE = 5  # Number of conversation turns to keep in context
+MEMORY_WINDOW_SIZE = 5  
 
 def record_audio(duration=5):
     audio = sd.rec(int(duration * 16000), samplerate=16000, channels=1)
@@ -171,10 +165,8 @@ def get_conversation_context():
     if not st.session_state.conversation_history:
         return []
     
-    # Get the last N turns, but ensure we don't exceed available history
     recent_turns = st.session_state.conversation_history[-MEMORY_WINDOW_SIZE:]
     
-    # Format the conversation history for the model
     formatted_context = []
     for turn in recent_turns:
         formatted_context.append({
@@ -185,19 +177,15 @@ def get_conversation_context():
     return formatted_context
 
 def chat_with_gpt(user_input):
-    # Get recent conversation context
     conversation_context = get_conversation_context()
     
-    # Combine system prompt with personal context and conversation history
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "system", "content": f"Personal Context: {PERSONAL_CONTEXT}"}
     ]
     
-    # Add conversation history
     messages.extend(conversation_context)
     
-    # Add current user input
     messages.append({"role": "user", "content": user_input})
     
     response = client.chat.completions.create(
@@ -218,23 +206,18 @@ def play_audio(file_path):
 
 def speak(text):
     try:
-        # Use 'en' for English with male voice and faster speech rate
         tts = gTTS(text=text, lang='en', slow=False)
         mp3_path = None
         wav_path = None
         try:
-            # Create files in the audio directory
             mp3_path = os.path.join(AUDIO_DIR, f"temp_{int(time.time())}_{np.random.randint(1000)}.mp3")
             wav_path = os.path.join(AUDIO_DIR, f"temp_{int(time.time())}_{np.random.randint(1000)}.wav")
             
             tts.save(mp3_path)
-            # Convert to WAV with higher sample rate for better quality
             sound = AudioSegment.from_mp3(mp3_path)
-            # Speed up the audio by 1.2x during conversion
             sound = sound.speedup(playback_speed=1.2)
             sound.export(wav_path, format="wav")
             
-            # Add to session state for cleanup
             st.session_state.audio_files.add(wav_path)
             return wav_path
             
@@ -250,7 +233,6 @@ def process_user_input(user_input, input_type="text"):
     if not user_input.strip():
         return
     
-    # Add user message to chat and conversation history
     user_message = {
         "role": "user", 
         "content": user_input,
@@ -262,11 +244,9 @@ def process_user_input(user_input, input_type="text"):
         "content": user_input
     })
     
-    # Generate AI response
     with st.spinner("🤔 Processing your question..."):
         answer = chat_with_gpt(user_input)
         
-        # Add assistant response to chat and conversation history
         assistant_message = {
             "role": "assistant", 
             "content": answer
@@ -277,39 +257,31 @@ def process_user_input(user_input, input_type="text"):
             "content": answer
         })
         
-        # Convert response to speech
         with st.spinner("🔊 Converting response to speech..."):
             audio_path = speak(answer)
             if audio_path:
                 st.session_state.messages[-1]["audio_path"] = audio_path
     st.rerun()
 
-# Main content
-st.title("Yashaswa as an AI")
+st.title("Chat with Yash")
 
-# Create two columns for the main content
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    # Chat container
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            # Show input method for user messages
             if message["role"] == "user":
                 input_type = message.get("input_type", "text")
                 input_icon = "🎤" if input_type == "voice" else "✍️"
                 st.markdown(f"**{input_icon} You ({input_type}):**")
             
-            # Create columns for text and audio
             text_col, audio_col = st.columns([3, 1])
             
             with text_col:
                 st.write(message["content"])
             
-            # Show audio player with autoplay if available
             if message.get("audio_path") and os.path.exists(message["audio_path"]):
                 with audio_col:
-                    # Read the audio file as bytes to avoid the warning
                     with open(message["audio_path"], 'rb') as audio_file:
                         audio_bytes = audio_file.read()
                         st.audio(
@@ -320,7 +292,6 @@ with col1:
                         )
 
 with col2:
-    # Input method selection
     st.subheader("Input Method")
     input_method = st.radio(
         "Choose how to ask your question:",
@@ -329,11 +300,9 @@ with col2:
         horizontal=True
     )
     
-    # Update session state based on selection
     st.session_state.input_method = "voice" if "Voice" in input_method else "text"
     
     if st.session_state.input_method == "text":
-        # Text input
         st.subheader("✍️ Text Input")
         user_input = st.text_area(
             "Type your question here:",
@@ -345,7 +314,6 @@ with col2:
             process_user_input(user_input, "text")
             
     else:
-        # Voice input
         st.subheader("🎤 Voice Input")
         st.markdown("Click the button below to start recording your question")
         
@@ -360,7 +328,6 @@ with col2:
                 else:
                     st.warning("No speech detected. Please try again.")
 
-    # Status indicators
     st.markdown("---")
     st.subheader("Connect")
     
@@ -375,17 +342,7 @@ with col2:
 
     st.markdown("---")
 
-# Footer
-st.markdown("---")
-st.markdown(f"""
-<div style='text-align: center'>
-    <p>Powered by OpenAI GPT-4 and Whisper</p>
-    <p style='font-size: 0.8em; color: #666;'>Maintaining context of last {MEMORY_WINDOW_SIZE} conversation turns</p>
-</div>
-""", unsafe_allow_html=True)
-
-# Update the clear chat button functionality
 if st.button("🗑️ Clear Chat", key="clear_chat"):
     st.session_state.messages = []
-    st.session_state.conversation_history = []  # Also clear conversation history
-    st.rerun() 
+    st.session_state.conversation_history = []  
+    st.rerun()
