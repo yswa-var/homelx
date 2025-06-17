@@ -25,3 +25,9 @@ Thumbs.db
 # Project specific
 *.wav
 *.mp3 
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+
+
