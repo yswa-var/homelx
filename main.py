@@ -241,7 +241,6 @@ def voice_chat_endpoint(background_tasks: BackgroundTasks, file: UploadFile = Fi
 @api_router.get("/audio/{filename}")
 def get_audio(filename: str):
     file_path = os.path.join(AUDIO_DIR, filename)
-    print(f"File path: {file_path}")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Audio not found")
     return FileResponse(file_path, media_type="audio/wav")
@@ -274,9 +273,11 @@ def test_endpoint():
 # Register the API router with prefix /api
 app.include_router(api_router, prefix="/api")
 
-# Serve React static files (MUST be last)
-app.mount("/", StaticFiles(directory="frontend/build", html=True), name="static")
+# Remove static file serving for Railway deployment
+# app.mount("/", StaticFiles(directory="frontend/build", html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
