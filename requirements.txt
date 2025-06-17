@@ -2,9 +2,13 @@
 # - ffmpeg (required for pydub)
 #   macOS: brew install ffmpeg
 
+setuptools>=65.0.0
+wheel>=0.38.0
+pip>=23.0.0
+build>=0.10.0
 streamlit>=1.24.0
 sounddevice>=0.4.6
-openai-whisper>=20231117
+openai-whisper==20231117
 gTTS>=2.3.2
 pydub>=0.25.1
 scipy>=1.11.3
