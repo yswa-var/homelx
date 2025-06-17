@@ -29,8 +29,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 AUDIO_DIR = "audio_files"
@@ -257,8 +258,18 @@ def get_user_info():
 
 @api_router.post("/delete_audio_files")
 def delete_audio_files():
-    cleanup_audio_files()
-    return {"status": "audio files deleted"}
+    try:
+        print("Deleting audio files...")
+        cleanup_audio_files()
+        print("Audio files deleted successfully")
+        return {"status": "success", "message": "audio files deleted"}
+    except Exception as e:
+        print(f"Error deleting audio files: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete audio files: {str(e)}")
+
+@api_router.get("/test")
+def test_endpoint():
+    return {"status": "success", "message": "API is working"}
 
 # Register the API router with prefix /api
 app.include_router(api_router, prefix="/api")

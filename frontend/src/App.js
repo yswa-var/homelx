@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import "./App.css";
 
-const API_BASE = "http://localhost:8000"; // Change if backend runs elsewhere
+const API_BASE = "http://http://192.168.96.121/:8000"; // Change if backend runs elsewhere
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -21,6 +21,12 @@ function App() {
       .then(res => res.json())
       .then(setUserInfo)
       .catch(() => {});
+    
+    // Test API connectivity
+    fetch(`${API_BASE}/api/test`)
+      .then(res => res.json())
+      .then(data => console.log("API test:", data))
+      .catch(err => console.error("API test failed:", err));
   }, []);
 
   // Scroll to bottom on new messages
@@ -150,8 +156,17 @@ function App() {
   };
 
   const deleteAudioFiles = async () => {
-    await fetch(`${API_BASE}/api/delete_audio_files`, { method: "POST" });
-    alert("All audio files deleted.");
+    try {
+      const response = await fetch(`${API_BASE}/api/delete_audio_files`, { method: "POST" });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      alert("All audio files deleted.");
+    } catch (error) {
+      console.error("Error deleting audio files:", error);
+      alert("Failed to delete audio files. Please try again.");
+    }
   };
 
   return (
