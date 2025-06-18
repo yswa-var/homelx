@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
 import "./App.css";
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+// Configurable API base URL - can be overridden for global deployment
+const API_BASE = process.env.REACT_APP_API_BASE || "https://yash-backend.loca.lt";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -40,31 +41,21 @@ function App() {
   React.useEffect(() => {
     const checkMicAccess = async () => {
       try {
-        console.log("Checking microphone access...");
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(t => t.stop());
         setMicAccessible(true);
-        console.log("Microphone access granted");
       } catch (error) {
-        console.error("Microphone access denied:", error);
+        console.log("Microphone access error:", error);
         setMicAccessible(false);
+        
+        // Check if it's a protocol issue (HTTP vs HTTPS)
+        if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+          console.warn("Microphone access blocked: HTTPS required for network access");
+        }
       }
     };
     checkMicAccess();
   }, []);
-
-  const retryMicAccess = async () => {
-    try {
-      console.log("Retrying microphone access...");
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(t => t.stop());
-      setMicAccessible(true);
-      console.log("Microphone access granted on retry");
-    } catch (error) {
-      console.error("Microphone access still denied:", error);
-      alert("Microphone access denied. Please check your browser permissions and try again.");
-    }
-  };
 
   const sendText = async () => {
     if (!input.trim()) return;
@@ -237,24 +228,18 @@ function App() {
             placeholder="Type your message..."
           />
           <button onClick={sendText} disabled={loading || !input.trim()}>Send</button>
-          {micAccessible ? (
-            <button
-              onClick={recording ? stopRecording : startRecording}
-              disabled={loading}
-              style={{ background: recording ? '#d9534f' : undefined }}
-            >
-              {recording ? "Stop" : "Record"}
-            </button>
-          ) : (
-            <button
-              onClick={retryMicAccess}
-              disabled={loading}
-              style={{ background: '#ff6b6b' }}
-              title="Retry microphone access"
-            >
-              🎤 Retry
-            </button>
-          )}
+          <button
+            onClick={recording ? stopRecording : startRecording}
+            disabled={loading || !micAccessible}
+            style={{ background: recording ? '#d9534f' : undefined }}
+            title={!micAccessible ? 
+              (window.location.protocol === 'http:' && window.location.hostname !== 'localhost' 
+                ? "Microphone access blocked: HTTPS required for network access" 
+                : "Microphone access denied") 
+              : undefined}
+          >
+            {recording ? "Stop" : "Record"}
+          </button>
           {recording && <span className="recording-indicator">● Recording...</span>}
           <button onClick={clearChat} disabled={loading}>Clear</button>
           <button onClick={deleteAudioFiles} disabled={loading} title="Delete all audio files">🗑️🔊</button>
