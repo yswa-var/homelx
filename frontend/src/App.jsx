@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Recorder from './components/Recorder'
 import Player from './components/Player'
+import ReactMarkdown from 'react-markdown'
 import './App.css'
 
 function App() {
@@ -8,6 +9,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [currentAudioBlob, setCurrentAudioBlob] = useState(null);
+  const [streamingMessage, setStreamingMessage] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -35,6 +38,9 @@ function App() {
 
   const sendToGPT = async (message) => {
     setIsLoading(true);
+    setIsStreaming(true);
+    setStreamingMessage('');
+    
     try {
       const response = await fetch('/chat', {
         method: 'POST',
@@ -51,24 +57,61 @@ function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let currentContent = '';
       
-      // Add assistant message to chat
-      const assistantMessage = {
-        id: Date.now() + 1,
-        text: data.reply,
-        sender: 'assistant',
-        timestamp: new Date().toLocaleTimeString()
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-      setConversationId(data.conversationId);
-
-      // Convert response to speech
-      await textToSpeech(data.reply);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || '';
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.type === 'conversation_id') {
+                setConversationId(data.conversationId);
+              } else if (data.type === 'content') {
+                currentContent += data.content;
+                setStreamingMessage(currentContent);
+              } else if (data.type === 'end') {
+                // Add final assistant message to chat
+                const assistantMessage = {
+                  id: Date.now() + 1,
+                  text: currentContent,
+                  sender: 'assistant',
+                  timestamp: new Date().toLocaleTimeString()
+                };
+                
+                setMessages(prev => [...prev, assistantMessage]);
+                setStreamingMessage('');
+                setIsStreaming(false);
+                
+                // Convert response to speech
+                await textToSpeech(currentContent);
+              } else if (data.type === 'error') {
+                console.error('Streaming error:', data.error);
+                setIsStreaming(false);
+                setStreamingMessage('');
+                alert('Error communicating with GPT. Please try again.');
+              }
+            } catch (e) {
+              console.error('Error parsing SSE data:', e);
+            }
+          }
+        }
+      }
       
     } catch (error) {
       console.error('Error sending message to GPT:', error);
+      setIsStreaming(false);
+      setStreamingMessage('');
       alert('Error communicating with GPT. Please try again.');
     } finally {
       setIsLoading(false);
@@ -118,25 +161,44 @@ function App() {
         </div>
         
         <div className="messages-container">
-          {messages.length === 0 ? (
+          {messages.length === 0 && !isStreaming ? (
             <div className="empty-state">
               <p>Start a conversation by recording your voice or typing a message!</p>
             </div>
           ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`message ${message.sender === 'user' ? 'user-message' : 'assistant-message'}`}
-              >
-                <div className="message-content">
-                  <p>{message.text}</p>
-                  <span className="timestamp">{message.timestamp}</span>
+            <>
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`message ${message.sender === 'user' ? 'user-message' : 'assistant-message'}`}
+                >
+                  <div className="message-content">
+                    {message.sender === 'assistant' ? (
+                      <ReactMarkdown>{message.text}</ReactMarkdown>
+                    ) : (
+                      <p>{message.text}</p>
+                    )}
+                    <span className="timestamp">{message.timestamp}</span>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+              
+              {isStreaming && (
+                <div className="message assistant-message">
+                  <div className="message-content">
+                    <ReactMarkdown>{streamingMessage}</ReactMarkdown>
+                    <div className="streaming-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
           
-          {isLoading && (
+          {isLoading && !isStreaming && (
             <div className="message assistant-message">
               <div className="message-content">
                 <div className="typing-indicator">

@@ -108,10 +108,10 @@ async def transcribe_audio(audio_file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
 
-@app.post("/chat", response_model=ChatResponse)
-async def chat_with_gpt(request: ChatRequest):
+@app.post("/chat")
+async def chat_with_gpt_stream(request: ChatRequest):
     """
-    Accepts message and conversationId, calls GPT-4o/turbo, returns reply + updated conversationId
+    Accepts message and conversationId, calls GPT-4o with streaming, returns SSE stream
     """
     try:
         # Prepare messages for the conversation
@@ -131,23 +131,46 @@ async def chat_with_gpt(request: ChatRequest):
         
         messages.append({"role": "user", "content": request.message})
         
-        # Call OpenAI GPT-4o API using new syntax
-        response = client.chat.completions.create(
-            model="gpt-4o",  # or "gpt-4o-mini" for faster/cheaper responses
-            messages=messages,
-            max_tokens=1000,
-            temperature=0.7
-        )
-        
-        reply = response.choices[0].message.content
-        
         # Generate a new conversationId (in a real app, you'd store this in a database)
         import uuid
         new_conversation_id = str(uuid.uuid4())
         
-        return ChatResponse(
-            reply=reply,
-            conversationId=new_conversation_id
+        def generate_stream():
+            try:
+                # Call OpenAI GPT-4o API with streaming enabled
+                response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=messages,
+                    max_tokens=1000,
+                    temperature=0.7,
+                    stream=True
+                )
+                
+                # Send conversation ID first
+                yield f"data: {json.dumps({'type': 'conversation_id', 'conversationId': new_conversation_id})}\n\n"
+                
+                # Stream the response chunks
+                for chunk in response:
+                    if chunk.choices[0].delta.content:
+                        content = chunk.choices[0].delta.content
+                        yield f"data: {json.dumps({'type': 'content', 'content': content})}\n\n"
+                
+                # Send end signal
+                yield f"data: {json.dumps({'type': 'end'})}\n\n"
+                
+            except Exception as e:
+                yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
+        
+        return StreamingResponse(
+            generate_stream(),
+            media_type="text/plain",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization"
+            }
         )
     
     except Exception as e:
