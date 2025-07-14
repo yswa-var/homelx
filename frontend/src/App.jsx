@@ -156,8 +156,9 @@ function App() {
     <div className="app">
       <div className="chat-container">
         <div className="chat-header">
-          <h1>🎙️ Voice Chat with GPT</h1>
-          <p>Use voice or text to chat with AI</p>
+          <h1>Chat with Yashaswa Varshney</h1>
+          <p>Use voice or text to chat with Yashaswa Varshney</p>
+          <p style={{fontWeight: 'bold'}}>Please note there is 2-3 second delay in the response and audio generation</p>
         </div>
         
         <div className="messages-container">
