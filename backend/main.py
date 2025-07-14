@@ -29,8 +29,13 @@ app.add_middleware(
 )
 
 # Mount static files for frontend
-if os.path.exists("../frontend/dist"):
-    app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="static")
+frontend_dist_path = "../frontend/dist"
+if os.path.exists(frontend_dist_path):
+    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="static")
+    print(f"✅ Frontend static files mounted from {frontend_dist_path}")
+else:
+    print(f"⚠️  Frontend dist folder not found at {frontend_dist_path}")
+    print("This is normal during development or if frontend hasn't been built yet")
 
 # Yash's personal system prompt and context
 SYSTEM_PROMPT = """
