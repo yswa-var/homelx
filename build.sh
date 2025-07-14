@@ -14,11 +14,8 @@ fi
 # Install dependencies
 echo "📦 Installing dependencies..."
 
-# Install Node.js dependencies
-if [ ! -d "frontend/node_modules" ]; then
-    echo "Installing Node.js dependencies..."
-    npm install
-fi
+# Install all dependencies
+npm run install:all
 
 # Build frontend
 echo "🔨 Building frontend..."
@@ -30,7 +27,7 @@ if [ -d "frontend/dist" ]; then
     echo "📁 Build output: frontend/dist/"
     echo ""
     echo "🚀 Ready for deployment!"
-    echo "The backend will serve the frontend from the dist folder"
+    echo "The Node.js backend will serve the frontend from the dist folder"
 else
     echo "❌ Frontend build failed!"
     exit 1

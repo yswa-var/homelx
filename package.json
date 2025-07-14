@@ -3,14 +3,20 @@
   "version": "1.0.0",
   "description": "Chat application with Yashaswa Varshney - Monorepo",
   "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
     "build:frontend": "cd frontend && npm run build",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
-    "build": "npm run install:frontend && npm run build:frontend",
-    "start": "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run install:all && npm run build:frontend",
+    "start": "cd backend && npm start"
   },
   "workspaces": [
-    "frontend"
-  ]
+    "frontend",
+    "backend"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
 } 

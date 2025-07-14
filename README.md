@@ -30,10 +30,10 @@ A real-time voice chat application with streaming GPT responses and markdown ren
 
 ### Backend
 
-- **FastAPI** - API framework
+- **Express.js** - Node.js web framework
 - **OpenAI API** - GPT-4o, Whisper, TTS
 - **Server-Sent Events** - For streaming responses
-- **Python 3.12+**
+- **Node.js 18+**
 
 ### Frontend
 
@@ -46,7 +46,6 @@ A real-time voice chat application with streaming GPT responses and markdown ren
 
 ### Prerequisites
 
-- Python 3.12+
 - Node.js 18+
 - OpenAI API key
 

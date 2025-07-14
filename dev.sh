@@ -15,25 +15,22 @@ fi
 # Install dependencies if needed
 echo "📦 Installing dependencies..."
 
-# Install Python dependencies
-if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
+# Install Node.js dependencies for backend
+if [ ! -d "backend/node_modules" ]; then
+    echo "Installing backend Node.js dependencies..."
+    cd backend && npm install && cd ..
 fi
 
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Install Node.js dependencies
+# Install Node.js dependencies for frontend
 if [ ! -d "frontend/node_modules" ]; then
-    echo "Installing Node.js dependencies..."
+    echo "Installing frontend Node.js dependencies..."
     cd frontend && npm install && cd ..
 fi
 
 # Start backend server in background
 echo "🔧 Starting backend server on http://localhost:8000..."
 cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
+npm run dev &
 BACKEND_PID=$!
 cd ..
 
@@ -59,7 +56,6 @@ cleanup() {
     echo "🛑 Stopping servers..."
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
-    deactivate
     echo "✅ Servers stopped"
     exit 0
 }

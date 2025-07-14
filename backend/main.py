@@ -31,8 +31,27 @@ app.add_middleware(
 # Mount static files for frontend
 frontend_dist_path = "../frontend/dist"
 if os.path.exists(frontend_dist_path):
-    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="static")
-    print(f"✅ Frontend static files mounted from {frontend_dist_path}")
+    # Mount static assets
+    app.mount("/assets", StaticFiles(directory=f"{frontend_dist_path}/assets"), name="assets")
+    print(f"✅ Frontend assets mounted from {frontend_dist_path}/assets")
+    
+    # Serve the main index.html at root
+    @app.get("/")
+    async def serve_index():
+        from fastapi.responses import FileResponse
+        return FileResponse(f"{frontend_dist_path}/index.html")
+    
+    # Add a catch-all route for SPA routing (but not for API endpoints)
+    @app.get("/{full_path:path}")
+    async def catch_all(full_path: str):
+        # If the path is an API endpoint, let it pass through
+        if full_path.startswith(("chat", "transcribe", "tts")):
+            raise HTTPException(status_code=404, detail="API endpoint not found")
+        
+        # For all other paths, serve the frontend index.html
+        from fastapi.responses import FileResponse
+        return FileResponse(f"{frontend_dist_path}/index.html")
+    
 else:
     print(f"⚠️  Frontend dist folder not found at {frontend_dist_path}")
     print("This is normal during development or if frontend hasn't been built yet")
