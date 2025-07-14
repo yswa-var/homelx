@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: homelx-chat-app
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      npm install
+      npm run build:frontend
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11
+    healthCheckPath: /
+    autoDeploy: true

@@ -11,4 +11,9 @@ export default defineConfig({
       '/tts': 'http://localhost:8000',
     },
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+  },
 })

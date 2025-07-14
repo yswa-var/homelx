@@ -114,6 +114,29 @@ The application uses a streaming architecture:
 4. Frontend renders markdown and updates UI in real-time
 5. TTS conversion happens after streaming completes
 
+## Deployment
+
+### Render Deployment
+
+This application is configured for deployment on Render as a monorepo. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+### Quick Deploy
+
+1. Push your code to a Git repository
+2. Connect your repository to Render
+3. Set the `OPENAI_API_KEY` environment variable
+4. Deploy using the `render.yaml` configuration
+
+### Local Development
+
+Use the provided development script:
+
+```bash
+./dev.sh
+```
+
+This will start both frontend and backend servers automatically.
+
 ## Contributing
 
 This is a personal project showcasing modern AI chat implementation with streaming responses and markdown rendering.
