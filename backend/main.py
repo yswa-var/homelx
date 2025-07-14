@@ -9,17 +9,14 @@ from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 if not os.getenv("OPENAI_API_KEY"):
     raise ValueError("OPENAI_API_KEY not found in environment variables")
 
 app = FastAPI()
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,35 +25,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for frontend
-frontend_dist_path = "../frontend/dist"
-if os.path.exists(frontend_dist_path):
-    # Mount static assets
-    app.mount("/assets", StaticFiles(directory=f"{frontend_dist_path}/assets"), name="assets")
-    print(f"✅ Frontend assets mounted from {frontend_dist_path}/assets")
-    
-    # Serve the main index.html at root
-    @app.get("/")
-    async def serve_index():
-        from fastapi.responses import FileResponse
-        return FileResponse(f"{frontend_dist_path}/index.html")
-    
-    # Add a catch-all route for SPA routing (but not for API endpoints)
-    @app.get("/{full_path:path}")
-    async def catch_all(full_path: str):
-        # If the path is an API endpoint, let it pass through
-        if full_path.startswith(("chat", "transcribe", "tts")):
-            raise HTTPException(status_code=404, detail="API endpoint not found")
-        
-        # For all other paths, serve the frontend index.html
-        from fastapi.responses import FileResponse
-        return FileResponse(f"{frontend_dist_path}/index.html")
-    
-else:
-    print(f"⚠️  Frontend dist folder not found at {frontend_dist_path}")
-    print("This is normal during development or if frontend hasn't been built yet")
+# Simple root endpoint for backend-only deployment
+@app.get("/")
+def root():
+    return {
+        "message": "Homelx Backend API is running",
+        "endpoints": {
+            "chat": "/chat",
+            "transcribe": "/transcribe", 
+            "tts": "/tts"
+        },
+        "status": "healthy"
+    }
 
-# Yash's personal system prompt and context
 SYSTEM_PROMPT = """
 you are yashaswa varshney, you are a software developer with expertise in AI, and automation.
 you are a good listener and you are a good communicator.
@@ -129,7 +110,6 @@ PERSONAL_CONTEXT = {
     ]
 }
 
-# Pydantic models for request/response
 class ChatRequest(BaseModel):
     message: str
     conversationId: Optional[str] = None
@@ -151,15 +131,12 @@ async def transcribe_audio(audio_file: UploadFile = File(...)):
     Accepts audio blob and transcribes it using Whisper
     """
     try:
-        # Read the audio file
         audio_content = await audio_file.read()
         
-        # Create a file-like object with the proper filename
         import io
         file_obj = io.BytesIO(audio_content)
         file_obj.name = audio_file.filename or "audio.mp3"
         
-        # Call OpenAI Whisper API using new syntax
         response = client.audio.transcriptions.create(
             model="whisper-1",
             file=file_obj
@@ -176,30 +153,23 @@ async def chat_with_gpt_stream(request: ChatRequest):
     Accepts message and conversationId, calls GPT-4o with streaming, returns SSE stream
     """
     try:
-        # Prepare messages for the conversation
         messages = []
         
-        # Add Yash's personalized system message
         messages.append({
             "role": "system", 
             "content": SYSTEM_PROMPT
         })
         
-        # If conversationId is provided, you might want to retrieve previous messages
-        # For now, we'll start fresh each time
         if request.conversationId:
-            # In a real implementation, you'd retrieve conversation history from a database
             pass
         
         messages.append({"role": "user", "content": request.message})
         
-        # Generate a new conversationId (in a real app, you'd store this in a database)
         import uuid
         new_conversation_id = str(uuid.uuid4())
         
         def generate_stream():
             try:
-                # Call OpenAI GPT-4o API with streaming enabled
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=messages,
@@ -208,16 +178,13 @@ async def chat_with_gpt_stream(request: ChatRequest):
                     stream=True
                 )
                 
-                # Send conversation ID first
                 yield f"data: {json.dumps({'type': 'conversation_id', 'conversationId': new_conversation_id})}\n\n"
                 
-                # Stream the response chunks
                 for chunk in response:
                     if chunk.choices[0].delta.content:
                         content = chunk.choices[0].delta.content
                         yield f"data: {json.dumps({'type': 'content', 'content': content})}\n\n"
                 
-                # Send end signal
                 yield f"data: {json.dumps({'type': 'end'})}\n\n"
                 
             except Exception as e:
@@ -244,17 +211,14 @@ async def text_to_speech(request: TTSRequest):
     Accepts text and returns audio using TTS-1 API
     """
     try:
-        # Call OpenAI TTS-1 API using new syntax
         response = client.audio.speech.create(
             model="tts-1",
-            voice="fable",  # Options: alloy, echo, fable, onyx, nova, shimmer
+            voice="fable",
             input=request.text
         )
         
-        # Get the audio content
         audio_content = response.content
         
-        # Return the audio as a streaming response
         return StreamingResponse(
             iter([audio_content]),
             media_type="audio/mpeg",

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import Recorder from './components/Recorder'
 import Player from './components/Player'
 import ReactMarkdown from 'react-markdown'
+import { getApiUrl } from './config'
 import './App.css'
 
 function App() {
@@ -42,7 +43,7 @@ function App() {
     setStreamingMessage('');
     
     try {
-      const response = await fetch('/chat', {
+      const response = await fetch(getApiUrl('/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +121,7 @@ function App() {
 
   const textToSpeech = async (text) => {
     try {
-      const response = await fetch('/tts', {
+      const response = await fetch(getApiUrl('/tts'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

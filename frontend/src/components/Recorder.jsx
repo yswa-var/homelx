@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { getApiUrl } from '../config';
 
 const Recorder = ({ onTranscription }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -70,7 +71,7 @@ const Recorder = ({ onTranscription }) => {
       const formData = new FormData();
       formData.append('audio_file', audioBlob, 'recording.webm');
 
-      const response = await fetch('/transcribe', {
+      const response = await fetch(getApiUrl('/transcribe'), {
         method: 'POST',
         body: formData,
       });

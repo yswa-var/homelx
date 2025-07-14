@@ -30,10 +30,10 @@ A real-time voice chat application with streaming GPT responses and markdown ren
 
 ### Backend
 
-- **Express.js** - Node.js web framework
+- **FastAPI** - API framework
 - **OpenAI API** - GPT-4o, Whisper, TTS
 - **Server-Sent Events** - For streaming responses
-- **Node.js 18+**
+- **Python 3.12+**
 
 ### Frontend
 
@@ -46,6 +46,7 @@ A real-time voice chat application with streaming GPT responses and markdown ren
 
 ### Prerequisites
 
+- Python 3.12+
 - Node.js 18+
 - OpenAI API key
 
@@ -115,16 +116,23 @@ The application uses a streaming architecture:
 
 ## Deployment
 
-### Render Deployment
+### Backend Deployment (Render)
 
-This application is configured for deployment on Render as a monorepo. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+The backend is configured for deployment on Render. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
-### Quick Deploy
+### Quick Deploy Backend
 
 1. Push your code to a Git repository
 2. Connect your repository to Render
 3. Set the `OPENAI_API_KEY` environment variable
 4. Deploy using the `render.yaml` configuration
+
+### Frontend Deployment
+
+After deploying the backend:
+
+1. Update `frontend/src/config.js` with your Render backend URL
+2. Deploy the frontend separately (Vercel, Netlify, GitHub Pages, etc.)
 
 ### Local Development
 
