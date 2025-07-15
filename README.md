@@ -132,7 +132,15 @@ The backend is configured for deployment on Render. See [DEPLOYMENT.md](./DEPLOY
 After deploying the backend:
 
 1. Update `frontend/src/config.js` with your Render backend URL
-2. Deploy the frontend separately (Vercel, Netlify, GitHub Pages, etc.)
+2. Deploy the frontend to Vercel (see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed instructions)
+
+#### Quick Vercel Deploy:
+
+1. Push your code to Git
+2. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+3. Import your repository
+4. Configure build settings (Vercel will auto-detect Vite)
+5. Deploy!
 
 ### Local Development
 
